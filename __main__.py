@@ -36,6 +36,7 @@ def main():
 if __name__ == "__main__":
     args = main()
     g2v = gat2vec(args.data, args.label)
+    # 是否使用g2v还是g2v_bip算法
     if args.algo == 'g2v':
         model = g2v.train_gat2vec(args.data,  args.num_walks, args.walk_length, args.dimension,
                                  args.window_size, args.output)
@@ -44,6 +45,7 @@ if __name__ == "__main__":
                                  args.window_size, args.output)
 
     ''' for blogcatalog set multilabel = True'''
+    # 是否使用multi label，看起来blogcatalog数据集是multi label的
     if args.data == 'blogcatalog':
         multilabel = True
     else:
@@ -51,6 +53,6 @@ if __name__ == "__main__":
 
     c_eval = Classification(args.data, multilabel)
     result_df = c_eval.evaluate(model, args.label)
-    print "Results ....."
-    print result_df
+    print("Results .....")
+    print(result_df)
     # g2v.param_walklen_nwalks('joint', args.data)

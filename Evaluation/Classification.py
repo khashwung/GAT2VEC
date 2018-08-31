@@ -27,9 +27,12 @@ class Classification:
     """ returns the embeddings read from file fname"""
     def get_embeddingDF(self, fname):
         df = pd.read_csv(fname, header=None, skiprows=1, delimiter=' ')
+        # 按照节点id顺序进行排序
         df.sort_values(by=[0], inplace=True)
         # dfs = dfs[:num_nodes]
+        # 将第一列的id列设为index，这样df的第一列就变成embedding的第一维了
         df = df.set_index(0)
+        # embedding 的df转为矩阵
         return df.as_matrix(columns=df.columns[0:])
 
     ''' returns list of labels ordered by the node id's '''
@@ -44,6 +47,7 @@ class Classification:
         node_list = lblmap.keys()
         node_list.sort()
         labels = [lblmap[vid] for vid in node_list]
+        # 一个id，一个label，这里也没有进行one hot
         return np.array(labels)
 
     ''' returns the multibinarized object for multilabel datasets'''
@@ -60,6 +64,7 @@ class Classification:
         nlist = lblmap.keys()
         nlist.sort()
         labels = [lblmap[vid] for vid in nlist]
+        # multi-hot label
         return self.binarizelabels(labels)
 
     ''' returns the multilabelbinarizer object'''
@@ -73,6 +78,7 @@ class Classification:
 
     ''' returns the classifier'''
     def getclassifier(self):
+        # 采用n_classes个逻辑斯的回归器进行分类
         log_reg = linear_model.LogisticRegression(n_jobs=8)
         ors = OneVsRestClassifier(log_reg)
         return ors
@@ -94,6 +100,7 @@ class Classification:
         return self. binarizelabels(pred_labels, nclasses)
 
     def getPredictions(self, clf, X_train, X_test, Y_train, Y_test):
+        ''' 训练或者预测的核心代码，这里有multilabel的实现 '''
         if self.multi_label:
             return self.fit_and_predict_multilabel(clf, X_train, X_test, Y_train, Y_test)
         else:
@@ -147,7 +154,7 @@ class Classification:
         clf = self.getclassifier()
         TR = [0.1, 0.3, 0.5] # the training ratio for classifier
         for tr in TR:
-            print "TR ... ", tr
+            print("TR ... ", tr)
             if label == True:
                 model = "./embeddings/" + self.dataset + "_gat2vec_label_" + str(int(tr * 100)) + ".emb"
                 if isinstance(model, str):
@@ -155,9 +162,9 @@ class Classification:
 
             gat2vecAcc, gat2vecF1micro, gat2vecF1macro = self.evaluate_tr(clf, embedding, tr)
             self._add_rows(self.dataset, output, tr, gat2vecAcc, gat2vecF1micro, gat2vecF1macro)
-        print "SVC Training Finished"
+        print("SVC Training Finished")
 
-        print "results"
+        print("results")
         outDf = pd.DataFrame(output)
         return outDf
 
